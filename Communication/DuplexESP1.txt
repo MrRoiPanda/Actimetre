@@ -1,0 +1,126 @@
+#include <esp_now.h>    // On importe la librairie
+#include <WiFi.h>   // On importe la librairie
+
+
+
+uint8_t broadcastAddress[] = {0x08, 0x3A, 0xF2, 0xB8, 0xFA, 0xF0};    // Adresse MAC de l'ESP récepteur
+int STOP = 0;
+
+
+
+
+// Exemple de structure qu'on peut envoyer
+// Doit correspondre avec la structure du récepteur
+typedef struct struct_message {
+  /*              ENVOI             */
+  char a[32];
+  int b;
+  float c;
+  bool d;
+  /*              RECEPTION             */
+  char e[32];
+  int f;
+  float g;
+  bool h;
+} struct_message;
+
+// Nouvelle variable de type struct_message appelée myData qui stockera les valeurs des variables
+struct_message MyData;
+
+// Cette fonction vérifie et affiche simplement si le message a été envoyé avec succès ou non.
+void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+  Serial.print("\r\nLast Packet Send Status:\t");
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Envoi Réussi" : "Envoi Échoué");
+}
+ 
+
+
+
+// Fonction de rappel qui sera appelée lorsque l'ESP32 recevra les données via ESP-NOW
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) { // On copie le contenu de la variable de données incomingData dans la variable MyData.
+  memcpy(&MyData, incomingData, sizeof(MyData));
+   // La structure myData contient plusieurs variables à l'intérieur avec les valeurs envoyées par l'expéditeur ESP32. 
+   // Pour accéder à la variable a, par exemple, il suffit d'appeler myData.a
+  
+  Serial.print("Bytes received: ");
+  Serial.println(len);    // Taille-Nombre de bits reçus (implementation dans OnDataRecv)
+  Serial.print("Char: ");
+  Serial.println(MyData.e);
+  Serial.print("Int: ");
+  Serial.println(MyData.f);
+  Serial.print("Float: ");
+  Serial.println(MyData.g);
+  Serial.print("Bool: ");
+  Serial.println(MyData.h);
+  Serial.println();
+}
+
+
+
+
+void setup() {
+
+  // On initialise la liaison série
+  Serial.begin(115200);
+ 
+  // Configurer l'appareil en tant que station Wi-Fi
+  WiFi.mode(WIFI_STA);
+
+  // Cette fonction vérifie et affiche simplement si l'initialisation de l'ESP a été effectuée avec succès ou non.
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW"); // Message d'erreur
+    return;
+  }
+
+/*              ENVOI             */
+  // Once ESPNow is successfully Init, we will register for Send CB to
+  // get the status of Transmitted packet
+  esp_now_register_send_cb(OnDataSent);
+/*              RECEPTION             */
+   // Fonction de rappel qui sera appelée lorsque les données seront reçues.
+  esp_now_register_recv_cb(OnDataRecv);
+  
+
+/*              ENVOI             */
+  // Couplage avec un autre appareil ESP-NOW pour envoyer des données
+  // Appairage
+  esp_now_peer_info_t peerInfo;
+  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+  peerInfo.channel = 0;  
+  peerInfo.encrypt = false;
+  
+  // Cette fonction vérifie et affiche simplement si l'appairage a été effectué avec succès ou non.
+  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+    Serial.println("Failed to add peer");
+    return;
+  }
+}
+ 
+
+
+
+
+void loop() {
+
+/*              ENVOI             */
+  while (STOP < 5){
+  // On définit les valeurs des variables à envoyer
+  strcpy(MyData.a, "THIS IS A CHAR");
+  MyData.b = random(1,20);
+  MyData.c = 1.2;
+  MyData.d = false;
+  
+  // On envoi le message
+  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &MyData, sizeof(MyData));
+   
+  if (result == ESP_OK) {   // Cette fonction vérifie et affiche simplement si la transmission a été effectuée avec succès ou non.
+    Serial.println("Sent with success");
+  }
+  else {
+    Serial.println("Error sending the data");
+  }
+  delay(2000);    // Dans la boucle on envoi un message via ESP-NOW toutes les 2 secondes
+  STOP = STOP + 1;
+  }
+
+}

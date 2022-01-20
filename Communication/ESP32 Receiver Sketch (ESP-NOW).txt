@@ -1,0 +1,54 @@
+#include <esp_now.h>    // On importe la librairie
+#include <WiFi.h>   // On importe la librairie
+
+// Exemple de structure qu'on peut envoyer
+// Doit correspondre avec la structure du récepteur
+typedef struct struct_message {
+    char a[32];
+    int b;
+    float c;
+    bool d;
+} struct_message;
+
+// Nouvelle variable de type struct_message appelée myData qui stockera les valeurs des variables
+struct_message myData;
+
+// Fonction de rappel qui sera appelée lorsque l'ESP32 recevra les données via ESP-NOW
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) { // On copie le contenu de la variable de données incomingData dans la variable myData.
+  memcpy(&myData, incomingData, sizeof(myData));
+   // La structure myData contient plusieurs variables à l'intérieur avec les valeurs envoyées par l'expéditeur ESP32. 
+   // Pour accéder à la variable a, par exemple, il suffit d'appeler myData.a
+  
+  Serial.print("Bytes received: ");
+  Serial.println(len);    // Taille-Nombre de bits reçus (implementation dans OnDataRecv)
+  Serial.print("Char: ");
+  Serial.println(myData.a);
+  Serial.print("Int: ");
+  Serial.println(myData.b);
+  Serial.print("Float: ");
+  Serial.println(myData.c);
+  Serial.print("Bool: ");
+  Serial.println(myData.d);
+  Serial.println();
+}
+ 
+void setup() {
+  // On initialise la liaison série
+  Serial.begin(115200);
+  
+  // Configurer l'appareil en tant que station Wi-Fi
+  WiFi.mode(WIFI_STA);
+
+  // Cette fonction vérifie et affiche simplement si l'initialisation de l'ESP a été effectuée avec succès ou non.
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+  
+ // Fonction de rappel qui sera appelée lorsque les données seront reçues.
+  esp_now_register_recv_cb(OnDataRecv);
+}
+ 
+void loop() {
+
+}
