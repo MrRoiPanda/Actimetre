@@ -3,7 +3,7 @@ Project of secound year of HND
 
 ## 👨‍🎓 Team
 - [Me *(Nathan Arial)*](https://github.com/MrRoiPanda)
-- [You *(Hugo Monchatre)*]
+- [You *(Hugo Monchatre)*](https://github.com/OxKilD)
 - 
 
 ## 👩‍🏫 Professor
