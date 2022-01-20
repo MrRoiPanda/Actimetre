@@ -41,7 +41,7 @@ void setup() {
   {
     digitalWrite(pinRows[i], LOW);
   }
-  // Output
+  // Output (Not work in loop)
   pinMode(32, OUTPUT);
   pinMode(33, OUTPUT);
   pinMode(16, OUTPUT);
@@ -57,18 +57,21 @@ void setup() {
 }
 
 void loop() {
-  // Read keypad
+  /// ---------------- Read keypad ---------------- ///
   bool inputKeyDown = false;
   Serial.println("Start loop");
   while (1)
   {
+    
     for (byte i = 0; i < COLUMNS; i++)
     {
       digitalWrite(pinColumn[i], HIGH);
       delay(temp);
       for (byte j = 0; j < ROWS; j++)
       {
+        // Get key down
         inputKeyDown = digitalRead(pinRows[j]);
+        
         if (inputKeyDown == true)
         {
           key = hexKeypad[j][i];
