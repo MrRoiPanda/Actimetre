@@ -1,0 +1,147 @@
+#include <esp_now.h>
+#include <WiFi.h>
+
+
+// REPLACE WITH THE MAC Address of your receiver 
+uint8_t broadcastAddress[] = {0x08, 0x3A, 0xF2, 0xB8, 0xFA, 0xF0};
+
+// Define variables to store BME280 readings to be sent
+float duree;
+float cage;
+float cycle;
+
+// Define variables to store incoming readings
+float incomingdur;
+float incomingcag;
+float incomingcy;
+
+// Variable to store if sending data was successful
+String success;
+
+//Structure example to send data
+//Must match the receiver structure
+typedef struct struct_message {
+    float dur;
+    float cag;
+    float cy;
+} struct_message;
+
+
+// Create a struct_message called BME280Readings to hold sensor readings
+struct_message BME280Readings;
+
+// Create a struct_message to hold incoming sensor readings
+struct_message incomingReadings;
+
+// Callback when data is sent
+void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+  Serial.print("\r\nLast Packet Send Status:\t");
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  if (status ==0){
+    success = "Delivery Success :)";
+  }
+  else{
+    success = "Delivery Fail :(";
+  }
+}
+
+// Callback when data is received
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
+  Serial.print("Bytes received: ");
+  Serial.println(len);
+  incomingdur = incomingReadings.dur;
+  incomingcag = incomingReadings.cag;
+  incomingcy = incomingReadings.cy;
+}
+ 
+void setup() {
+  // Init Serial Monitor
+  Serial.begin(115200);
+
+/*
+  // Init BME280 sensor
+  bool status = bme.begin(0x76);  
+  if (!status) {
+    Serial.println("Could not find a valid BME280 sensor, check wiring!");
+    while (1);
+  }
+
+  // Init OLED display
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { 
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;);
+  }
+ */
+
+  // Set device as a Wi-Fi Station
+  WiFi.mode(WIFI_STA);
+
+  // Init ESP-NOW
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+
+  // Once ESPNow is successfully Init, we will register for Send CB to
+  // get the status of Trasnmitted packet
+  esp_now_register_send_cb(OnDataSent);
+  
+ 
+  // Register peer
+  esp_now_peer_info_t peerInfo;
+  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+  peerInfo.channel = 0;  
+  peerInfo.encrypt = false;
+  
+  // Add peer        
+  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+    Serial.println("Failed to add peer");
+    return;
+  }
+
+  // Register for a callback function that will be called when data is received
+  esp_now_register_recv_cb(OnDataRecv);
+}
+ 
+
+
+void updateDisplay(){
+  // Display Readings on OLED Display
+  Serial.println("INCOMING READINGS");
+  Serial.print("duree: ");
+  Serial.println(incomingReadings.dur);
+  Serial.print("cage: ");
+  Serial.println(incomingReadings.cag);
+  Serial.print("cycle: ");
+  Serial.println(incomingReadings.cy);
+
+}
+
+void loop() {
+  //getReadings();
+ 
+  // Set values to send
+  BME280Readings.dur = duree;
+  BME280Readings.cag = cage;
+  BME280Readings.cy = cycle;
+
+  // Send message via ESP-NOW
+  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &BME280Readings, sizeof(BME280Readings));
+   
+  if (result == ESP_OK) {
+    Serial.println("Sent with success");
+  }
+  else {
+    Serial.println("Error sending the data");
+  }
+  updateDisplay();
+  delay(10000);
+}
+/*void getReadings(){
+  
+  duree = bme.readduree();
+  cage = bme.readcage();
+  cycle = (bme.readcycle() / 100.0F);
+
+}*/
