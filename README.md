@@ -12,3 +12,7 @@ Project of secound year of HND
 
 ## 🔗 Links
 - [High School](https://chevrollier.paysdelaloire.e-lyco.fr)
+
+## Library Used
+- [Arduino Json](https://arduinojson.org/)
+- [Grove - LCD backlight](https://github.com/Seeed-Studio/Grove_LCD_RGB_Backlight)
