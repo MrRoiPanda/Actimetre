@@ -27,6 +27,8 @@ const int16_t pinColumn[COLUMNS] = {17, 16, 33, 32};   // OUT
 
 void setup() {
   Serial.begin(115200);
+  /// init screen ///
+  lcd.begin(16, 2);
 
   /// init keypad ///
   for (byte i = 0; i < ROWS; i++)
