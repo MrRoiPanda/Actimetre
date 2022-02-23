@@ -18,7 +18,6 @@ This project is parntership with the company porsolt.
 - [Porsolt](https://www.porsolt.com/)
 
 ## Library Used
-- [Arduino Json](https://arduinojson.org/)
 - [Grove - LCD backlight](https://github.com/Seeed-Studio/Grove_LCD_RGB_Backlight)
 
 
