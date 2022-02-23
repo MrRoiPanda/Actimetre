@@ -25,11 +25,24 @@ const char hexKeypad[COLUMNS][ROWS] = {
 const int16_t pinRows[ROWS] = {35, 34, 39, 36};        // IN
 const int16_t pinColumn[COLUMNS] = {17, 16, 33, 32};   // OUT
 
+// key pulldown
+char key;
+// Key update speed
+const int temp = 15;
+
+/// --------------------- FUNCTION ------------------------ ///
+void screenSelect(void);
+void keysRead(void);
+void keysActions (char);
+void savedata(String, String, String, String);
+
 void setup() {
   Serial.begin(115200);
   /// init screen ///
   lcd.begin(16, 2);
-
+  lcd.display("Actimetre");
+  lcd.cursor(0,1);
+  lcd.display("Initialisation ...");
   /// init keypad ///
   for (byte i = 0; i < ROWS; i++)
   {
@@ -68,14 +81,83 @@ void setup() {
 }
 
 void loop() {
-  
+  // Page actimetre
+  // 
+
+  while(1){}
 }
 
 /// KEYPADE READER FUNCTION ///
+void keysRead(){
+  bool inputKeyDown = false;
+  Serial.println("Start loop");
+  while (1){
+    for (byte i = 0; i < COLUMNS; i++) {
+      digitalWrite(pinColumn[i], HIGH);
+      delay(temp);
+      for (byte j = 0; j < ROWS; j++){
+        inputKeyDown = digitalRead(pinRows[j]);
+        if (inputKeyDown == true)
+        {
+          key = hexKeypad[j][i];
+          keysActions(key);
+          inputKeyDown = false;
+        }
+        delay(temp);
+      }
+      digitalWrite(pinColumn[i], LOW);
+    }
+  }
+}
+
+void keysActions (char KEY) {
+
+  switch (KEY)
+  {
+  case '#':
+    lcd.clear();
+    break;
+    
+  default:
+    lcd.print(KEY);
+    break;
+  }
+}
 
 /// DISPLAY TEXT FUNCTION ///
-// switch for each page 
+// switch for each page
+void screenSelect(){
+  switch (expression)
+  {
+  case /* constant-expression */:
+    /* code */
+    break;
+  
+  default:
+    break;
+  }
+}
 
 /// SEND DATA TO SD CARD ///
+void savedata(String nEtude, String groupe, String espname ,String data){
+  String _path;
+  _path = "/" + nEtude;
+  if (SD.exists(_path + "/data.csv") == false)
+  {
+    SD.mkdir(_path);
+    Serial.println("file Created");
+  }
+  
+  // Creat text file + open in read mode
+  myFile = SD.open(_path + "/data.csv", FILE_WRITE);
+  // Header / Column name
+  myFile.println("Groupe ; Cage ; Donnee" );
+  // Write in file
+  myFile.println(groupe + ';' + espname + ';' + data);
+  // Close file
+  myFile.close();
+  
+}
 
 /// SEND DATA TO OTHERS ESP32 ///
+// Hugo's task
