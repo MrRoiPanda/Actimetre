@@ -1,99 +1,79 @@
 #include <Arduino.h>
 #include "rgb_lcd.h"
-// Class
+#include <SD.h>
+#include <SPI.h>
+#include <WiFi.h>
+
+/// --------------------- SD CARD ------------------------- ///
+File myFile;
+
+/// --------------------- SCREEN -------------------------- ///
 rgb_lcd lcd;
 
-/// ---------------- Matrice ---------------- ///
-// Creat
+/// --------------------- KEYPAD -------------------------- ///
 const byte ROWS = 4;    // 4 lignes
 const byte COLUMNS = 4; // 4 colonnes
 
-// keypad mapping
+// Matrice
 const char hexKeypad[COLUMNS][ROWS] = {
-  {'1', '2', '3', 'A'},
-  {'4', '5', '6', 'B'},
-  {'7', '8', '9', 'C'},
-  {'*', '0', '#', 'D'}
+	{'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
 };
 
-// IO Pins
-const int16_t pinRows[ROWS] = {35, 34, 39, 36};      // entrée
-const int16_t pinColumn[COLUMNS] = {17, 16, 33, 32}; // sortie
-
-// 
-char key;
-const int temp = 15; 
-
-// Key utilities 
-void keysActions(char);
+const int16_t pinRows[ROWS] = {35, 34, 39, 36};        // IN
+const int16_t pinColumn[COLUMNS] = {17, 16, 33, 32};   // OUT
 
 void setup() {
   Serial.begin(115200);
-  // LCD size
-  lcd.begin(16, 2);
-  // Input
-  pinMode(35, INPUT);
-  pinMode(34, INPUT);
-  pinMode(39, INPUT);
-  pinMode(36, INPUT);
 
+  /// init keypad ///
   for (byte i = 0; i < ROWS; i++)
   {
-    digitalWrite(pinRows[i], LOW);
+		digitalWrite(pinRows[i],LOW);
   }
-  // Output (Not work in loop)
-  pinMode(32, OUTPUT);
-  pinMode(33, OUTPUT);
-  pinMode(16, OUTPUT);
-  pinMode(17, OUTPUT);
+  pinMode( 35, INPUT);
+  pinMode( 34, INPUT);
+  pinMode( 39, INPUT);
+  pinMode( 36, INPUT);
 
+  // column output
   for (byte i = 0; COLUMNS < 4; i++)
   {
-    digitalWrite(pinColumn[i], LOW);
+		digitalWrite(pinColumn[i],LOW);
+  }
+  pinMode( 32, OUTPUT);
+  pinMode( 33, OUTPUT);
+  pinMode( 16, OUTPUT);
+  pinMode( 17, OUTPUT);
+
+  /// INIT SD CARD PIN ///
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
   }
 
-  Serial.println("End setup");
-  delay(10);
+  Serial.println("Initializing SD card...");
+
+  if (!SD.begin(5)) {
+    Serial.println("initialization failed!");
+    while (1);
+  }
+
+  Serial.println("initialization done.");
+
+  delay(50);
 }
 
 void loop() {
-  /// ---------------- Read keypad ---------------- ///
-  bool inputKeyDown = false;
-  Serial.println("Start loop");
-  while (1)
-  {
-    
-    for (byte i = 0; i < COLUMNS; i++)
-    {
-      digitalWrite(pinColumn[i], HIGH);
-      delay(temp);
-      for (byte j = 0; j < ROWS; j++)
-      {
-        // Get key down
-        inputKeyDown = digitalRead(pinRows[j]);
-        
-        if (inputKeyDown == true)
-        {
-          key = hexKeypad[j][i];
-          keysActions(key);
-          inputKeyDown = false;
-        }
-        delay(temp);
-      }
-      digitalWrite(pinColumn[i], LOW);
-    }
-  }
+  
 }
 
-void keysActions(char KEY) {
-  switch (KEY)
-  {
-  case '#':
-    lcd.clear();
-    break;
+/// KEYPADE READER FUNCTION ///
 
-  default:
-    lcd.print(KEY);
-    break;
-  }
-}
+/// DISPLAY TEXT FUNCTION ///
+// switch for each page 
+
+/// SEND DATA TO SD CARD ///
+
+/// SEND DATA TO OTHERS ESP32 ///
