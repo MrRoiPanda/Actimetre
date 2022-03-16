@@ -7,7 +7,7 @@ This project is parntership with the company porsolt.
 - [Me *(Nathan Arial)*](https://github.com/MrRoiPanda)
 - [You *(Hugo Monchatre)*](https://github.com/OxKilD)
 - [*Denia*]()
-- [*Mathias*]()
+- [*Mathias*](https://github.com/Nasslear)
 
 ## 👩‍🏫 Professor
 - Mister Mady
