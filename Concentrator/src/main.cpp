@@ -288,7 +288,7 @@ void testCreation() {
         indice--;
       } else if (action == '*'){
         
-        ANUMBRE = (byte) (Data[0] - '0') + (Data[1] - '0')*10;
+        ANUMBRE = (byte) (Data[0] - '0')*10 + (Data[1] - '0');
         Serial.println(ANUMBRE);
         if ((ANUMBRE > maxCage) || (ANUMBRE < emptyCage)) {
           indice = 0xEE;
