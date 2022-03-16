@@ -20,6 +20,11 @@ This project is parntership with the company porsolt.
 ## Library Used
 - [Grove - LCD backlight](https://github.com/Seeed-Studio/Grove_LCD_RGB_Backlight)
 
+## Tasks
+- Concentrator : Nathan
+- Light : Mathias
+- Position tracking : Denia
+- Merge solution : Hugo
 
 ## Chart
 https://mermaid.live/
