@@ -164,19 +164,26 @@ char keysRead(bool ActiveKeypad){
 /// DISPLAY KEY FUNCTION ///
 void keysActions(char _key){
 
-  if (_key == 'D'){
+  switch (_key)
+  {
+    case 'D':
+      if (keysCount != 0) {
+        Data[keysCount--] = 0; //clear last key
+      }
 
-    while (keysCount != 0) {
-      Data[keysCount--] = 0; //clear last key
-    }
+    break;
 
-  } else {
-
-    /* display _key */
-    Data[keysCount] = _key;
-    lcd.setCursor(keysCount,1);
-    lcd.print(Data[keysCount]);
-    keysCount++;
+    case '*' || '#' || 'A' || 'B' || 'C':
+      //do nothing
+    break;
+    
+    default:
+      /* display _key */
+      Data[keysCount] = _key;
+      lcd.setCursor(keysCount,1);
+      lcd.print(Data[keysCount]);
+      keysCount++;
+    break;
   }
 
 }
@@ -290,7 +297,7 @@ void testCreation() {
         
         ANUMBRE = (byte) (Data[0] - '0')*10 + (Data[1] - '0');
         Serial.println(ANUMBRE);
-        if ((ANUMBRE > maxCage) || (ANUMBRE < emptyCage)) {
+        if ((ANUMBRE > maxCage) || (ANUMBRE > emptyCage)) {
           indice = 0xEE;
         } else {
           indice++;
@@ -376,7 +383,7 @@ void testCreation() {
       if (action == '#') {
         indice--;
       } else if (action == '*'){
-        indice = 0xFF;
+        indice = 0xF0;
       }
     break;
 
@@ -412,7 +419,7 @@ void testCreation() {
     break;
 
     // Save Data & send to All ESP
-    case 0xFF:
+    case 0xF0:
       lcd.clear();
       // Starting page 
       lcd.setCursor(0,0);
