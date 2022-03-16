@@ -17,14 +17,14 @@ This project is parntership with the company porsolt.
 - [High School](https://chevrollier.paysdelaloire.e-lyco.fr)
 - [Porsolt](https://www.porsolt.com/)
 
-## Library Used
-- [Grove - LCD backlight](https://github.com/Seeed-Studio/Grove_LCD_RGB_Backlight)
-
 ## Tasks
 - Concentrator : Nathan
 - Light : Mathias
 - Position tracking : Denia
 - Merge solution : Hugo
+
+## Library Used
+- [Grove - LCD backlight](https://github.com/Seeed-Studio/Grove_LCD_RGB_Backlight)
 
 ## Chart
 https://mermaid.live/
