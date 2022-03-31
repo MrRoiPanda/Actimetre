@@ -13,7 +13,6 @@
 rgb_lcd lcd;
 
 /// --------------------- KEYPAD -------------------------- ///
-
 const byte ROWS = 4;    // 4 lignes
 const byte COLUMNS = 4; // 4 colonnes
 const byte DEPTH = 3;
@@ -27,7 +26,7 @@ const char hexKeypad[COLUMNS][ROWS] = {
 };
 
 // Profondeur, ligne, colone
-char letters[DEPTH][ROWS][COLUMNS] = {
+const char letters[DEPTH][ROWS][COLUMNS] = {
   {
     { 'A', 'D', 'G' , '.'}, 
     { 'J', 'M', 'P' , '.'},
@@ -51,8 +50,7 @@ char letters[DEPTH][ROWS][COLUMNS] = {
 const int16_t pinRows[ROWS] = {35, 34, 39, 36};        // IN
 const int16_t pinColumn[COLUMNS] = {17, 16, 33, 32};   // OUT
 
-// key pulldown - use in keysRead();
-// char key; 
+/// ----------------------------------------------------- ///
 
 // last key
 char lkey = '.'; 
@@ -62,8 +60,6 @@ byte ckey = 0;
 char value = '.';
 char key = ',';
 char letter = '?';
-
-/// ----------------------------------------------------- ///
 
 // Characters displayed on screen
 char Data[16];
@@ -103,6 +99,7 @@ void saveSettings(String, String, byte, byte, int, int, byte, byte);
 /// ----------------------- SETUP ------------------------- /// 
 
 void setup() {
+  
   Serial.begin(115200);
   /// init screen ///
   lcd.begin(16, 2);
@@ -110,7 +107,9 @@ void setup() {
   lcd.print("Actimetre       ");
   lcd.setCursor(0,1);
   lcd.print("Initialisation  ");
-  /// init keypad ///
+
+  /// ------------------- INIT KEYPAD --------------------- ///
+
   // raws input
   pinMode( 35, INPUT_PULLDOWN);
   pinMode( 34, INPUT_PULLDOWN);
@@ -133,7 +132,8 @@ void setup() {
 		digitalWrite(pinColumn[i],LOW);
   }
 
-  /// INIT SD CARD PIN ///
+  /// --------------- INIT SD CARD PIN ------------------ ///
+
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
@@ -146,7 +146,9 @@ void setup() {
   }
   
   Serial.println("initialization done.");
-  /// --------------- ///
+
+  /// -------------------------------------------------- ///
+
   delay(5000);
   lcd.clear();
 }
@@ -162,171 +164,8 @@ void loop() {
   
 }
 
-/// KEYPADE READER FUNCTION ///
-char keysRead(bool ActiveKeypad){
-  char key = 0x00;
-  bool inputKeyDown = false;
-  Serial.println("Start read");
-  
-  while ((key != '#') && (key != '*') && (key != 'A') & (key != 'B') && (key != 'C')) {
+/// -------------- DISPLAY TEXT FUNCTION --------------- /// 
 
-    for (byte i = 0; i < COLUMNS; i++) {
-      digitalWrite(pinColumn[i], HIGH);
-      delay(temp);
-
-      for (byte j = 0; j < ROWS; j++) {
-        inputKeyDown = digitalRead(pinRows[j]);
-
-        if (inputKeyDown == true) {
-          key = hexKeypad[j][i];
-          
-          if (ActiveKeypad == true) {
-            keysActions(key);
-          }
-          Serial.print(key);
-          
-          inputKeyDown = false;
-        }
-        delay(temp);
-      }
-      digitalWrite(pinColumn[i], LOW);
-    }
-
-  }
-  Serial.println("return active");
-  return key;
-}
-
-
-/// KEYPADE READER FUNCTION FOR LETTERS ///
-char keysReadLetters(){
-  
-  bool inputKeyDown = false;
-  Serial.println("Start read");
-  Serial.println("-------------------");
-  
-  while ((key != '#') && (key != '*') && (key != 'A') & (key != 'B') && (key != 'C')) {
-
-    for (byte i = 0; i < COLUMNS; i++) {
-      digitalWrite(pinColumn[i], HIGH);
-      delay(temp);
-
-      for (byte j = 0; j < ROWS; j++) {
-        inputKeyDown = digitalRead(pinRows[j]);
-
-        if (inputKeyDown == true) {
-          Serial.print("Touche : ");
-          Serial.println(hexKeypad[j][i]);
-
-          Serial.print("last key : ");
-          Serial.println(lkey);
-
-          key = hexKeypad[j][i];
-
-          if (key != lkey) {
-            ckey = 0;
-            Serial.print("lettre : ");
-            Serial.println(letters[ckey][j][i]);
-            
-            letter = letters[ckey][j][i];
-            //keysActions(letter);
-          }
-
-          if (key == lkey) {
-            ckey++;
-
-            if (ckey >= 3) {
-              ckey = 0;
-              //keysActions(letter);
-            }
-            else {
-              //key = letters[ckey][j][i];
-              Serial.println("meme touche !");
-              Serial.print("lettre : ");
-              Serial.println(letters[ckey][j][i]);
-              letter = letters[ckey][j][i];
-              
-            }
-            
-          }
-
-          //lcd.setCursor(0, 1);
-          //lcd.print(letter);
-
-          Serial.print("ckey : ");
-          Serial.println(ckey);
-          Serial.print("i : ");
-          Serial.println(i);
-          Serial.print("j : ");
-          Serial.println(j);
-          Serial.println("-------------------");
-          lkey = key;
-          inputKeyDown = false;
-        }
-        delay(temp);
-      }
-      digitalWrite(pinColumn[i], LOW);
-    }
-
-  }
-  Serial.println("return active");
-  return key;
-}
-
-
-/// WRITE NUMBER
-
-
-/// DISPLAY KEY FUNCTION ///
-void keysActions(char _key){
-
-  switch (_key)
-  {
-    case 'D':
-
-      if (keysCount != 0) {
-        Data[keysCount--] = 0; //clear last key
-        lcd.setCursor(keysCount,1);
-        lcd.print(' ');
-      }
-
-    break;
-
-    case '*':
-      //do nothing
-    break;
-    case '#':
-      //do nothing
-    break;
-    case 'A':
-      //do nothing
-    break;
-    case 'B':
-      //do nothing
-    break;
-    case 'C':
-      //do nothing
-    break;
-    
-    default:
-      /* display _key */
-      Data[keysCount] = _key;
-      lcd.setCursor(keysCount,1);
-      lcd.print(Data[keysCount]);
-      keysCount++;
-    break;
-  }
-
-}
-
-void clearData(){
-  for (size_t d = 0; d < 16; d++)
-  {
-    Data[d] = 0;
-  }
-}
-
-/// DISPLAY TEXT FUNCTION ///
 // switch for each "page"
 void testCreation() {
 
@@ -601,4 +440,172 @@ void testCreation() {
     break;
   }
 
+}
+
+/// --------------- KEYPADE READER FUNCTION --------------- ///
+
+// Return char, use true if you need to display key
+char keysRead(bool ActiveKeypad){
+  char key = 0x00;
+  bool inputKeyDown = false;
+  Serial.println("Start read");
+  
+  while ((key != '#') && (key != '*') && (key != 'A') & (key != 'B') && (key != 'C')) {
+
+    for (byte i = 0; i < COLUMNS; i++) {
+      digitalWrite(pinColumn[i], HIGH);
+      delay(temp);
+
+      for (byte j = 0; j < ROWS; j++) {
+        inputKeyDown = digitalRead(pinRows[j]);
+
+        if (inputKeyDown == true) {
+          key = hexKeypad[j][i];
+          
+          if (ActiveKeypad == true) {
+            keysActions(key);
+          }
+          Serial.print(key);
+          
+          inputKeyDown = false;
+        }
+        delay(temp);
+      }
+      digitalWrite(pinColumn[i], LOW);
+    }
+
+  }
+  Serial.println("return active");
+  return key;
+}
+
+
+/// --------------- KEYPADE READER FUNCTION FOR LETTERS --------------- ///
+
+// Return char
+char keysReadLetters(){
+  char key = 0x00;
+  bool inputKeyDown = false;
+  Serial.println("Start read");
+  Serial.println("-------------------");
+  
+  while ((key != '#') && (key != '*') && (key != 'A') & (key != 'B') && (key != 'C')) {
+
+    for (byte i = 0; i < COLUMNS; i++) {
+      digitalWrite(pinColumn[i], HIGH);
+      delay(temp);
+
+      for (byte j = 0; j < ROWS; j++) {
+        inputKeyDown = digitalRead(pinRows[j]);
+
+        if (inputKeyDown == true) {
+          Serial.print("Touche : ");
+          Serial.println(hexKeypad[j][i]);
+
+          Serial.print("last key : ");
+          Serial.println(lkey);
+
+          key = hexKeypad[j][i];
+
+          if (key != lkey) {
+            ckey = 0;
+            Serial.print("lettre : ");
+            Serial.println(letters[ckey][j][i]);
+            
+            letter = letters[ckey][j][i];
+            //keysActions(letter);
+          }
+
+          if (key == lkey) {
+            ckey++;
+
+            if (ckey >= 3) {
+              ckey = 0;
+              //keysActions(letter);
+            }
+            else {
+              //key = letters[ckey][j][i];
+              Serial.println("meme touche !");
+              Serial.print("lettre : ");
+              Serial.println(letters[ckey][j][i]);
+              letter = letters[ckey][j][i];
+              
+            }
+            
+          }
+
+          //lcd.setCursor(0, 1);
+          //lcd.print(letter);
+
+          Serial.print("ckey : ");
+          Serial.println(ckey);
+          Serial.print("i : ");
+          Serial.println(i);
+          Serial.print("j : ");
+          Serial.println(j);
+          Serial.println("-------------------");
+          lkey = key;
+          inputKeyDown = false;
+        }
+        delay(temp);
+      }
+      digitalWrite(pinColumn[i], LOW);
+    }
+
+  }
+  Serial.println("return active");
+  return key;
+}
+
+
+/// --------------- DISPLAY KEY FUNCTION --------------- ///
+
+// need char to work
+void keysActions(char _key){
+
+  switch (_key)
+  {
+    case 'D':
+
+      if (keysCount != 0) {
+        Data[keysCount--] = 0; //clear last key
+        lcd.setCursor(keysCount,1);
+        lcd.print(' ');
+      }
+
+    break;
+
+    case '*':
+      //do nothing
+    break;
+    case '#':
+      //do nothing
+    break;
+    case 'A':
+      //do nothing
+    break;
+    case 'B':
+      //do nothing
+    break;
+    case 'C':
+      //do nothing
+    break;
+    
+    default:
+      /* display _key */
+      Data[keysCount] = _key;
+      lcd.setCursor(keysCount,1);
+      lcd.print(Data[keysCount]);
+      keysCount++;
+    break;
+  }
+
+}
+
+// Clear data array
+void clearData(){
+  for (size_t d = 0; d < 16; d++)
+  {
+    Data[d] = 0;
+  }
 }
