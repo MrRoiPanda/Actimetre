@@ -6,7 +6,7 @@
 
 /// --------------------- SD CARD ------------------------- ///
 
-File myFile;
+//File myFile;
 
 /// --------------------- SCREEN -------------------------- ///
 
@@ -16,8 +16,9 @@ rgb_lcd lcd;
 
 const byte ROWS = 4;    // 4 lignes
 const byte COLUMNS = 4; // 4 colonnes
+const byte DEPTH = 3;
 
-// Matrice
+// Colone , ligne
 const char hexKeypad[COLUMNS][ROWS] = {
 	{'1','2','3','A'},
   {'4','5','6','B'},
@@ -25,18 +26,51 @@ const char hexKeypad[COLUMNS][ROWS] = {
   {'*','0','#','D'}
 };
 
+// Profondeur, ligne, colone
+char letters[DEPTH][ROWS][COLUMNS] = {
+  {
+    { 'A', 'D', 'G' , '.'}, 
+    { 'J', 'M', 'P' , '.'},
+    { 'S', 'V', 'Y' , '.'},
+    { '*', '.', '#' , 'D'}
+  },
+  {
+    { 'B', 'E', 'H' , '.'},
+    { 'K', 'N', 'Q' , '.'},
+    { 'T', 'W', 'Z' , '.'},
+    { '*', '.', '#' , 'D'}
+  },
+  {
+    { 'C', 'F', 'I' , '.'},
+    { 'L', 'O', 'R' , '.'},
+    { 'U', 'X', '.' , '.'},
+    { '*', '.', '#' , 'D'}
+  }
+};
+
 const int16_t pinRows[ROWS] = {35, 34, 39, 36};        // IN
 const int16_t pinColumn[COLUMNS] = {17, 16, 33, 32};   // OUT
 
 // key pulldown - use in keysRead();
-// char key;
+// char key; 
+
+// last key
+char lkey = '.'; 
+// key counter
+byte ckey = 0;
+//
+char value = '.';
+char key = ',';
+char letter = '?';
+
+/// ----------------------------------------------------- ///
 
 // Characters displayed on screen
 char Data[16];
 // Characters count
-byte keysCount;
+byte keysCount = 0;
 // Screen number
-int indice = 0x00;
+int indices = 0x00;
 // key return
 char action;
 // Key update speed | laste value 15
@@ -47,21 +81,24 @@ byte maxCage = 32;
 byte emptyCage = 32;
 
 // Data need to be saved
-int ETUDE;
+String ETUDE;
 String TECHID;
 byte ANIMALS;
 byte ANUMBRE;
 int TSTART;
 int TESTDURATION;
 byte BRIGHTNESS;
+byte GID;
 
 /// --------------------- FUNCTION ------------------------ ///
 
 char keysRead(bool);
+char keysReadLetters();
 void keysActions(char);
+void clearData(void);
 void testCreation(void);
 void saveData(String, String, String, String);
-String toSring(void);
+void saveSettings(String, String, byte, byte, int, int, byte, byte);
 
 /// ----------------------- SETUP ------------------------- /// 
 
@@ -102,12 +139,12 @@ void setup() {
   }
   
   Serial.println("Initializing SD card...");
-  /*
+  
   if (!SD.begin(5)) {
     Serial.println("initialization failed!");
     //while (1);
   }
-  */
+  
   Serial.println("initialization done.");
   /// --------------- ///
   delay(5000);
@@ -117,6 +154,11 @@ void setup() {
 void loop() {
 
   testCreation();
+  if (indices == 0xFF) {
+    while (1) {
+    /* code */
+    }
+  }
   
 }
 
@@ -155,7 +197,81 @@ char keysRead(bool ActiveKeypad){
   return key;
 }
 
-/// READ SPECIAL KEYS ///
+
+/// KEYPADE READER FUNCTION FOR LETTERS ///
+char keysReadLetters(){
+  
+  bool inputKeyDown = false;
+  Serial.println("Start read");
+  Serial.println("-------------------");
+  
+  while ((key != '#') && (key != '*') && (key != 'A') & (key != 'B') && (key != 'C')) {
+
+    for (byte i = 0; i < COLUMNS; i++) {
+      digitalWrite(pinColumn[i], HIGH);
+      delay(temp);
+
+      for (byte j = 0; j < ROWS; j++) {
+        inputKeyDown = digitalRead(pinRows[j]);
+
+        if (inputKeyDown == true) {
+          Serial.print("Touche : ");
+          Serial.println(hexKeypad[j][i]);
+
+          Serial.print("last key : ");
+          Serial.println(lkey);
+
+          key = hexKeypad[j][i];
+
+          if (key != lkey) {
+            ckey = 0;
+            Serial.print("lettre : ");
+            Serial.println(letters[ckey][j][i]);
+            
+            letter = letters[ckey][j][i];
+            //keysActions(letter);
+          }
+
+          if (key == lkey) {
+            ckey++;
+
+            if (ckey >= 3) {
+              ckey = 0;
+              //keysActions(letter);
+            }
+            else {
+              //key = letters[ckey][j][i];
+              Serial.println("meme touche !");
+              Serial.print("lettre : ");
+              Serial.println(letters[ckey][j][i]);
+              letter = letters[ckey][j][i];
+              
+            }
+            
+          }
+
+          //lcd.setCursor(0, 1);
+          //lcd.print(letter);
+
+          Serial.print("ckey : ");
+          Serial.println(ckey);
+          Serial.print("i : ");
+          Serial.println(i);
+          Serial.print("j : ");
+          Serial.println(j);
+          Serial.println("-------------------");
+          lkey = key;
+          inputKeyDown = false;
+        }
+        delay(temp);
+      }
+      digitalWrite(pinColumn[i], LOW);
+    }
+
+  }
+  Serial.println("return active");
+  return key;
+}
 
 
 /// WRITE NUMBER
@@ -167,13 +283,28 @@ void keysActions(char _key){
   switch (_key)
   {
     case 'D':
+
       if (keysCount != 0) {
         Data[keysCount--] = 0; //clear last key
+        lcd.setCursor(keysCount,1);
+        lcd.print(' ');
       }
 
     break;
 
-    case '*' || '#' || 'A' || 'B' || 'C':
+    case '*':
+      //do nothing
+    break;
+    case '#':
+      //do nothing
+    break;
+    case 'A':
+      //do nothing
+    break;
+    case 'B':
+      //do nothing
+    break;
+    case 'C':
       //do nothing
     break;
     
@@ -188,11 +319,18 @@ void keysActions(char _key){
 
 }
 
+void clearData(){
+  for (size_t d = 0; d < 16; d++)
+  {
+    Data[d] = 0;
+  }
+}
+
 /// DISPLAY TEXT FUNCTION ///
-// switch for each page
+// switch for each "page"
 void testCreation() {
 
-  switch (indice) {
+  switch (indices) {
 
     case 0x00:
       lcd.clear();
@@ -204,9 +342,9 @@ void testCreation() {
       // Waiting key A or B
       action = keysRead(false);
       if (action == 'A'){
-        indice++;
+        indices++;
       } else if (action == 'B'){
-        indice = 0x10;
+        indices = 0x10;
       }
     break;
 
@@ -220,9 +358,9 @@ void testCreation() {
       // Waiting key # or *
       action = keysRead(false);
       if (action == '#') {
-        indice--;
+        indices--;
       } else if (action == '*') {
-        indice++;
+        indices++;
       }
     break;
 
@@ -236,10 +374,12 @@ void testCreation() {
       // Waiting key # or *
       action = keysRead(true);
       if (action == '#') {
-        indice--;
+        indices--;
       } else if (action == '*') {
-        String STUDY = String(Data);
-        indice++;
+        //String STUDY = String(Data);
+        ETUDE = String(Data);
+        indices++;
+        clearData();
       }
 
     break;
@@ -252,11 +392,13 @@ void testCreation() {
       lcd.setCursor(0,1);
       keysCount = 0;
       // Waiting key # or *
+      action = keysReadLetters();
       if (action == '#') {
-        indice--;
+        indices--;
       } else if (action == '*'){
-        String TECHID = String(Data);
-        indice++;
+        TECHID = String(Data);
+        indices = 0x04;
+        clearData();
       }
     break;
 
@@ -270,13 +412,15 @@ void testCreation() {
       // Waiting key # or A or B
       action = keysRead(false);
       if (action == '#') {
-        indice--;
+        indices = 0x03;
       } else if(action == 'A') {
         ANIMALS = 1;
-        indice++;
+        indices++;
+        clearData();
       } else if(action == 'B') {
         ANIMALS = 0;
-        indice++;
+        indices++;
+        clearData();
       }
 
     break;
@@ -292,15 +436,18 @@ void testCreation() {
       action = keysRead(true);
       if (action == '#')
       {
-        indice--;
+        indices--;
       } else if (action == '*'){
         
-        ANUMBRE = (byte) (Data[0] - '0')*10 + (Data[1] - '0');
+        ANUMBRE = (byte) (Data[0] - '0') * 10 + (Data[1] - '0');
         Serial.println(ANUMBRE);
         if ((ANUMBRE > maxCage) || (ANUMBRE > emptyCage)) {
-          indice = 0xEE;
+          indices = 0xEE;
+          ANUMBRE = 0;
         } else {
-          indice++;
+          indices++;
+          clearData();
+          ANUMBRE = 0;
         }
         
       }
@@ -316,9 +463,12 @@ void testCreation() {
       // Waiting key # or *
       action = keysRead(true);
       if (action == '#') {
-        indice--;
-      } else if (action == '*'){
-        indice++;
+        indices--;
+      } else if (action == '*') {
+
+        //TSTART = Data; // int
+        indices++;
+        clearData();
       }
 
     break;
@@ -327,15 +477,17 @@ void testCreation() {
       lcd.clear();
       /// duration ///
       lcd.setCursor(0,0);
-      lcd.print("duration");
+      lcd.print("duration (min)");
       lcd.setCursor(0,1);
       keysCount = 0;
       // Waiting key # or *
       action = keysRead(true);
       if (action == '#') {
-        indice--;
+        indices--;
       } else if (action == '*'){
-        indice++;
+        // TESTDURATION = String(Data); // int
+        indices++;
+        clearData();
       }
     break;
 
@@ -349,9 +501,11 @@ void testCreation() {
       // Waiting key # or *
       action = keysRead(true);
       if (action == '#') {
-        indice--;
+        indices--;
       } else if (action == '*'){
-        indice++;
+        // BRIGHTNESS = Data; // byte
+        indices++;
+        clearData();
       }
 
     break;
@@ -366,9 +520,11 @@ void testCreation() {
       // Waiting key # or *
       action = keysRead(true);
       if (action == '#') {
-        indice--;
+        indices--;
       } else if (action == '*'){
-        indice++;
+        // GID = Data; // byte
+        indices++;
+        clearData();
       }
 
     break;
@@ -381,9 +537,11 @@ void testCreation() {
       // Waiting key # or *
       action = keysRead(false);
       if (action == '#') {
-        indice--;
+        indices--;
       } else if (action == '*'){
-        indice = 0xF0;
+        
+        
+        indices = 0xF0;
       }
     break;
 
@@ -398,7 +556,7 @@ void testCreation() {
       // Waiting key # or *
       action = keysRead(false);
       if (action == '#') {
-        indice = 0x00;
+        indices = 0x00;
       }
 
     break;
@@ -414,43 +572,33 @@ void testCreation() {
       // Waiting key #
       action = keysRead(false);
       if (action == '#') {
-        indice = 0x05;
+        indices = 0x05;
+        clearData();
       }
     break;
 
     // Save Data & send to All ESP
     case 0xF0:
       lcd.clear();
+
+      lcd.setCursor(0,0);
+      lcd.print(" SAVING...      ");
+      Serial.println("Saving settings");
+      
+      saveSettings(ETUDE, TECHID, ANIMALS, ANUMBRE, TSTART, TESTDURATION, BRIGHTNESS, GID);
+      indices = 0xF1;
+    break;
+
+    // Display Test info
+    case 0xF1:
+      // waiting data
+      lcd.clear();
       // Starting page 
       lcd.setCursor(0,0);
-      lcd.print("STARTING ....   ");
+      lcd.print("|Test:   0%    |");
       lcd.setCursor(0,1);
-      lcd.print("Sending data ...");
+      lcd.print("|               ");
     break;
   }
 
 }
-
-/// SEND DATA TO SD CARD ///
-void saveData(String nEtude, String groupe, String espname ,String data){
-  String _path;
-  _path = "/" + nEtude;
-  if (SD.exists(_path + "/data.csv") == false)
-  {
-    SD.mkdir(_path);
-    Serial.println("file Created");
-  }
-  
-  // Creat text file + open in read mode
-  myFile = SD.open(_path + "/data.csv", FILE_WRITE);
-  // Header / Column name
-  myFile.println("Groupe ; Cage ; Donnee" );
-  // Write in file
-  myFile.println(groupe + ';' + espname + ';' + data);
-  // Close file
-  myFile.close();
-  
-}
-
-/// SEND DATA TO OTHERS ESP32 ///
-// Hugo's task
