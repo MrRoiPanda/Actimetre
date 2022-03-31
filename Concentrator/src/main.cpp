@@ -505,7 +505,7 @@ char keysReadLetters(){
 
           key = hexKeypad[j][i];
 
-          if ((key != lkey)) {
+          if (key != lkey) {
             ckey = 0;
             Serial.print("lettre : ");
             Serial.println(letters[ckey][j][i]);
