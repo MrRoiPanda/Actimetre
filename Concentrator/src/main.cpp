@@ -1,3 +1,14 @@
+/*
+. -------------------------------------------------------------------.        
+| [Esc] [F1][F2][F3][F4][F5][F6][F7][F8][F9][F0][F10][F11][F12] o o o|        
+|                                                                    |        
+| [`][1][2][3][4][5][6][7][8][9][0][-][=][_<_] [I][H][U] [N][/][*][-]|        
+| [|-][Q][W][E][R][T][Y][U][I][O][P][{][}] | | [D][E][D] [7][8][9]|+||        
+| [CAP][A][S][D][F][G][H][J][K][L][;]['][#]|_|           [4][5][6]|_||        
+| [^][\][Z][X][C][V][B][N][M][,][.][/] [__^__]    [^]    [1][2][3]| ||        
+| [c]   [a][________________________][a]   [c] [<][V][>] [ 0  ][.]|_||        
+`--------------------------------------------------------------------'
+*/
 #include <Arduino.h>
 #include "rgb_lcd.h"
 #include <SD.h>
@@ -52,14 +63,11 @@ const int16_t pinColumn[COLUMNS] = {17, 16, 33, 32};   // OUT
 
 /// ----------------------------------------------------- ///
 
-// last key
-char lkey = '.'; 
+// Save read key
+char key = '?', letter = '?', lkey = '.';
+
 // key counter
 byte ckey = 0;
-//
-char value = '.';
-char key = '?';
-char letter = '?';
 
 // Characters displayed on screen
 char Data[16];
@@ -72,27 +80,24 @@ char action;
 // Key update speed | laste value 15
 const int temp = 15;
 
-// Number of cage
+// Number of cages
 byte maxCage = 32;
 byte emptyCage = 32;
 
 // Data need to be saved
-String ETUDE;
-String TECHID;
-byte ANIMALS;
-byte ANUMBRE;
-int TSTART;
-int TESTDURATION;
-byte BRIGHTNESS;
-byte GID;
+String ETUDE, TECHID;
+byte ANIMALS, ANUMBRE, BRIGHTNESS, GID;
+int TSTART, TESTDURATION;
 
 /// --------------------- FUNCTION ------------------------ ///
+
+void testCreation(void);
 
 char keysRead(bool);
 char keysReadLetters();
 void keysActions(char);
 void clearData(void);
-void testCreation(void);
+
 void saveData(String, String, String, String);
 void saveSettings(String, String, byte, byte, int, int, byte, byte);
 
@@ -101,7 +106,9 @@ void saveSettings(String, String, byte, byte, int, int, byte, byte);
 void setup() {
   
   Serial.begin(115200);
-  /// init screen ///
+
+  /// ------------------- INIT SCREEN --------------------- ///
+
   lcd.begin(16, 2);
   lcd.setCursor(0,0);
   lcd.print("Actimetre       ");
@@ -134,11 +141,11 @@ void setup() {
 
   /// --------------- INIT SD CARD PIN ------------------ ///
 
+  Serial.println("Initializing SD card...");
+
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
-  
-  Serial.println("Initializing SD card...");
   
   if (!SD.begin(5)) {
     Serial.println("initialization failed!");
@@ -149,13 +156,14 @@ void setup() {
 
   /// -------------------------------------------------- ///
 
+
   delay(5000);
-  lcd.clear();
 }
 
 void loop() {
 
   testCreation();
+
   if (indices == 0xFF) {
     while (1) {
     /* code */
