@@ -58,7 +58,7 @@ char lkey = '.';
 byte ckey = 0;
 //
 char value = '.';
-char key = ',';
+char key = '?';
 char letter = '?';
 
 // Characters displayed on screen
@@ -378,8 +378,6 @@ void testCreation() {
       if (action == '#') {
         indices--;
       } else if (action == '*'){
-        
-        
         indices = 0xF0;
       }
     break;
@@ -507,24 +505,21 @@ char keysReadLetters(){
 
           key = hexKeypad[j][i];
 
-          if (key != lkey) {
+          if ((key != lkey)) {
             ckey = 0;
             Serial.print("lettre : ");
             Serial.println(letters[ckey][j][i]);
-            
+            keysActions(letter);
             letter = letters[ckey][j][i];
-            //keysActions(letter);
-          }
-
-          if (key == lkey) {
+          } 
+          else if (key == lkey) {
             ckey++;
 
             if (ckey >= 3) {
               ckey = 0;
-              //keysActions(letter);
+              keysActions(letter);
             }
             else {
-              //key = letters[ckey][j][i];
               Serial.println("meme touche !");
               Serial.print("lettre : ");
               Serial.println(letters[ckey][j][i]);
@@ -533,7 +528,7 @@ char keysReadLetters(){
             }
             
           }
-
+          
           //lcd.setCursor(0, 1);
           //lcd.print(letter);
 
