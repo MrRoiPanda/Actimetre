@@ -5,7 +5,7 @@ This project is parntership with the company porsolt.
 
 ## 👨‍🎓 Team
 - [Me *(Nathan Arial)*](https://github.com/MrRoiPanda)
-- [Hugo Monchatre](https://github.com/OxKilD)
+- [*Hugo Monchatre*](https://github.com/OxKilD)
 - [*Denia*]()
 - [*Mathias*](https://github.com/Nasslear)
 
